@@ -1,30 +1,41 @@
-pipeline
-{
-         agent any
-           stages {
-               stage('Pull') {
-                    steps{
-                       script{
-                           checkout([$class: 'GitSCM', branches: [[name: '*/master']],
-                               userRemoteConfigs: [[
-                                   url: 'https://github.com/k16kh/app.git']]])
-                    }
+pipeline {
+    agent any
+      
+   
+    stages {
+
+        stage("Pull") {
+            steps {
+                script {
+                     checkout([$class: 'GitSCM' , branches: [[name: '*/master']],
+		userRemoteConfigs: [[
+		    credentialsId: 'github',
+		    url:'https://github.com/k16kh/application.git']]])
+                   
                 }
             }
-               stage('install') {
-                        steps{
-                          script{
-                             sh " sudo npm install "
-                          }
-                        }
-                   }
-               stage('Build')
-               {
-                               steps {
-                                      script{
-                                      sh "ansible-playbook ansible/build.yml -i ansible/inventory/host.yml "
-                                            }
-                                     }
-                            }
         }
+        
+        stage ("build")
+        {		
+        		steps {
+        			script{
+        			sh " sudo ansible-playbook Ansible/build.yml -i Ansible/inventory/host.yml"
+        			}
+        			}
+        }
+        
+              stage ("docker")
+        {		
+        		steps {
+        			script{
+        			sh "ansible-playbook Ansible/docker.yml -i Ansible/inventory/host.yml"
+        			}
+        			}
+        }
+        
+          
+    }
+    
+     
 }
